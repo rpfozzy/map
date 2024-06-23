@@ -143,13 +143,16 @@
                 zoom: 12
             });
 
-            window.requestLocation = function() {
+            var locationGraphic; // Глобальная переменная для хранения графического объекта
+
+window.requestLocation = function() {
     if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(function(position) {
+        // Отслеживание местоположения пользователя
+        navigator.geolocation.watchPosition(function(position) {
             // Получение координат пользователя
             var latitude = position.coords.latitude;
             var longitude = position.coords.longitude;
-            
+
             // Создание точки на основе полученных координат
             var point = new Point({
                 longitude: longitude,
@@ -166,13 +169,19 @@
                 }
             };
 
-            var pointGraphic = new Graphic({
-                geometry: point,
-                symbol: markerSymbol
-            });
+            // Если графический объект уже существует, обновляем его координаты
+            if (locationGraphic) {
+                locationGraphic.geometry = point;
+            } else {
+                // Иначе создаем новый графический объект
+                locationGraphic = new Graphic({
+                    geometry: point,
+                    symbol: markerSymbol
+                });
 
-            // Добавление графического объекта на карту
-            view.graphics.add(pointGraphic);
+                // Добавляем графический объект на карту
+                view.graphics.add(locationGraphic);
+            }
 
             // Опционально: Центрирование карты на новую точку
             view.goTo({
