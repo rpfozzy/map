@@ -146,9 +146,42 @@
             window.requestLocation = function() {
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(function(position) {
-            // Ваш текущий код для обработки успешного получения местоположения
+            // Получение координат пользователя
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            
+            // Создание точки на основе полученных координат
+            var point = new Point({
+                longitude: longitude,
+                latitude: latitude
+            });
+
+            // Создание графического объекта (красная точка)
+            var markerSymbol = {
+                type: "simple-marker",
+                color: [226, 119, 40], // Цвет в формате RGB
+                outline: {
+                    color: [255, 255, 255], // Цвет обводки
+                    width: 1
+                }
+            };
+
+            var pointGraphic = new Graphic({
+                geometry: point,
+                symbol: markerSymbol
+            });
+
+            // Добавление графического объекта на карту
+            view.graphics.add(pointGraphic);
+
+            // Опционально: Центрирование карты на новую точку
+            view.goTo({
+                target: point,
+                zoom: 15
+            });
         }, function(error) {
-            // Ваш текущий код для обработки ошибки получения местоположения
+            // Обработка ошибки получения местоположения
+            console.error("Ошибка при получении местоположения:", error.message);
         });
     } else {
         alert("Геолокация не поддерживается вашим браузером.");
@@ -188,4 +221,4 @@
         </div>
     </div>
 </body>
-  </html>
+</html> 
