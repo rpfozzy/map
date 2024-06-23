@@ -97,106 +97,105 @@
         }
     </style>
     <script>
-        var map, view, thunderforestLayer, satelliteBasemap, wikimapiaLayer;
+        var map, view, thunderforestLayer, satelliteBasemap, wikimapiaLayer, locationGraphic;
 
-        require([
-            "esri/Map",
-            "esri/views/MapView",
-            "esri/layers/WebTileLayer",
-            "esri/Basemap",
-            "esri/Graphic",
-            "esri/geometry/Point"
-        ], function(Map, MapView, WebTileLayer, Basemap, Graphic, Point) {
-            satelliteBasemap = new Basemap({
-                baseLayers: [
-                    new WebTileLayer({
-                        urlTemplate: "https://mt1.google.com/vt/lyrs=s&x={col}&y={row}&z={level}",
-                        title: "Satellite"
-                    })
-                ],
-                title: "Satellite",
-                id: "satellite"
-            });
+require([
+    "esri/Map",
+    "esri/views/MapView",
+    "esri/layers/WebTileLayer",
+    "esri/Basemap",
+    "esri/Graphic",
+    "esri/geometry/Point"
+], function(Map, MapView, WebTileLayer, Basemap, Graphic, Point) {
+    satelliteBasemap = new Basemap({
+        baseLayers: [
+            new WebTileLayer({
+                urlTemplate: "https://mt1.google.com/vt/lyrs=s&x={col}&y={row}&z={level}",
+                title: "Satellite"
+            })
+        ],
+        title: "Satellite",
+        id: "satellite"
+    });
 
-            thunderforestLayer = new WebTileLayer({
-                urlTemplate: "https://{subDomain}.tile.thunderforest.com/outdoors/{level}/{col}/{row}.png?apikey=397af944364049dab6ed57f9d93a817a",
-                subDomains: ["a", "b", "c"],
-                title: "Thunderforest Outdoors",
-                opacity: 0.5
-            });
+    thunderforestLayer = new WebTileLayer({
+        urlTemplate: "https://{subDomain}.tile.thunderforest.com/outdoors/{level}/{col}/{row}.png?apikey=397af944364049dab6ed57f9d93a817a",
+        subDomains: ["a", "b", "c"],
+        title: "Thunderforest Outdoors",
+        opacity: 0.5
+    });
 
-            wikimapiaLayer = new WebTileLayer({
-                urlTemplate: "https://i.wikimapia.org/?x={col}&y={row}&zoom={level}&lng=1",
-                title: "Wikimapia",
-                visible: false
-            });
+    wikimapiaLayer = new WebTileLayer({
+        urlTemplate: "https://i.wikimapia.org/?x={col}&y={row}&zoom={level}&lng=1",
+        title: "Wikimapia",
+        visible: false
+    });
 
-            map = new Map({
-                basemap: satelliteBasemap,
-                layers: [thunderforestLayer, wikimapiaLayer]
-            });
+    map = new Map({
+        basemap: satelliteBasemap,
+        layers: [thunderforestLayer, wikimapiaLayer]
+    });
 
-            view = new MapView({
-                container: "map",
-                map: map,
-                center: [30.8118, 50.5051],
-                zoom: 12
-            });
+    view = new MapView({
+        container: "map",
+        map: map,
+        center: [30.8118, 50.5051],
+        zoom: 12,
+        navigation: {
+            mouseWheelZoomEnabled: false,
+            browserTouchPanEnabled: false,
+            doubleClickZoomEnabled: false,
+            keyboard: false
+        }
+    });
 
-            var locationGraphic; // Глобальная переменная для хранения графического объекта
+    view.on("double-click", function(event) {
+        event.stopPropagation();
+    });
 
-window.requestLocation = function() {
-    if ("geolocation" in navigator) {
-        // Отслеживание местоположения пользователя
-        navigator.geolocation.watchPosition(function(position) {
-            // Получение координат пользователя
-            var latitude = position.coords.latitude;
-            var longitude = position.coords.longitude;
+    window.requestLocation = function() {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.watchPosition(function(position) {
+                var latitude = position.coords.latitude;
+                var longitude = position.coords.longitude;
 
-            // Создание точки на основе полученных координат
-            var point = new Point({
-                longitude: longitude,
-                latitude: latitude
-            });
-
-            // Создание графического объекта (красная точка)
-            var markerSymbol = {
-                type: "simple-marker",
-                color: [226, 119, 40], // Цвет в формате RGB
-                outline: {
-                    color: [255, 255, 255], // Цвет обводки
-                    width: 1
-                }
-            };
-
-            // Если графический объект уже существует, обновляем его координаты
-            if (locationGraphic) {
-                locationGraphic.geometry = point;
-            } else {
-                // Иначе создаем новый графический объект
-                locationGraphic = new Graphic({
-                    geometry: point,
-                    symbol: markerSymbol
+                var point = new Point({
+                    longitude: longitude,
+                    latitude: latitude
                 });
 
-                // Добавляем графический объект на карту
-                view.graphics.add(locationGraphic);
-            }
+                var markerSymbol = {
+                    type: "simple-marker",
+                    color: [226, 119, 40],
+                    outline: {
+                        color: [255, 255, 255],
+                        width: 1
+                    }
+                };
 
-            // Опционально: Центрирование карты на новую точку
-            view.goTo({
-                target: point,
-                zoom: 15
+                if (locationGraphic) {
+                    locationGraphic.geometry = point;
+                } else {
+                    locationGraphic = new Graphic({
+                        geometry: point,
+                        symbol: markerSymbol
+                    });
+
+                    view.graphics.add(locationGraphic);
+                }
+
+                view.goTo({
+                    target: point,
+                    zoom: 15
+                });
+            }, function(error) {
+                console.error("Ошибка при получении местоположения:", error.message);
             });
-        }, function(error) {
-            // Обработка ошибки получения местоположения
-            console.error("Ошибка при получении местоположения:", error.message);
-        });
-    } else {
-        alert("Геолокация не поддерживается вашим браузером.");
+        } else {
+            alert("Геолокация не поддерживается вашим браузером.");
+        }
     }
-}
-        });
+});
 
         function toggleWikimapia() {
             wikimapiaLayer.visible = !wikimapiaLayer.visible;
