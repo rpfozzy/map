@@ -154,47 +154,42 @@ require([
     });
 
     window.requestLocation = function() {
-        if ("geolocation" in navigator) {
-            navigator.geolocation.watchPosition(function(position) {
-                var latitude = position.coords.latitude;
-                var longitude = position.coords.longitude;
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
 
-                var point = new Point({
-                    longitude: longitude,
-                    latitude: latitude
-                });
-
-                var markerSymbol = {
-                    type: "simple-marker",
-                    color: [226, 119, 40],
-                    outline: {
-                        color: [255, 255, 255],
-                        width: 1
-                    }
-                };
-
-                if (locationGraphic) {
-                    locationGraphic.geometry = point;
-                } else {
-                    locationGraphic = new Graphic({
-                        geometry: point,
-                        symbol: markerSymbol
-                    });
-
-                    view.graphics.add(locationGraphic);
-                }
-
-                view.goTo({
-                    target: point,
-                    zoom: 15
-                });
-            }, function(error) {
-                console.error("Ошибка при получении местоположения:", error.message);
+            var point = new Point({
+                longitude: longitude,
+                latitude: latitude
             });
-        } else {
-            alert("Геолокация не поддерживается вашим браузером.");
-        }
+
+            var markerSymbol = {
+                type: "simple-marker",
+                color: [226, 119, 40],
+                outline: {
+                    color: [255, 255, 255],
+                    width: 1
+                }
+            };
+
+            if (locationGraphic) {
+                locationGraphic.geometry = point;
+            } else {
+                locationGraphic = new Graphic({
+                    geometry: point,
+                    symbol: markerSymbol
+                });
+
+                view.graphics.add(locationGraphic);
+            }
+        }, function(error) {
+            console.error("Ошибка при получении местоположения:", error.message);
+        });
+    } else {
+        alert("Геолокация не поддерживается вашим браузером.");
     }
+}
 });
 
         function toggleWikimapia() {
