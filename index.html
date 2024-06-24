@@ -44,6 +44,13 @@
                             w: 180,
                             h: 120
                         }
+                    }),
+                    new OpenLayers.Control.Navigation({
+                        dragPanOptions: {
+                            enableKinetic: true
+                        },
+                        zoomWheelEnabled: true,
+                        pinchZoomEnabled: true
                     })
                 ]
             });
@@ -52,6 +59,10 @@
                 displayInLayerSwitcher: true
             });
             map.addLayer(markers);
+
+            var initialLocation = new OpenLayers.LonLat(30.7667, 50.5167) // Coordinates for Brovary
+                .transform(map.displayProjection, map.projection);
+            map.setCenter(initialLocation, 12); // Setting the initial zoom level to 12
 
             addMarkers();
         }
