@@ -3,225 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Карта Google</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://js.arcgis.com/4.26/esri/themes/light/main.css">
-    <script src="https://js.arcgis.com/4.26/"></script>
+    <title>Meta Maps Example</title>
     <style>
-        :root {
-            --primary-color: #3498db;
-            --secondary-color: #2ecc71;
-            --background-color: #f0f0f0;
-            --text-color: #333;
-        }
-
-        * {
+        body {
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            height: 100%;
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-        }
-
-        #app {
             display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        #map {
-            flex-grow: 1;
-        }
-
-        .header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 1rem;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .button-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 1000;
-        }
-
-        .map-button {
-            padding: 12px 20px;
-            background-color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-color);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
         }
-
-        .map-button:hover {
-            background-color: var(--secondary-color);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
-        }
-
-        .map-button i {
-            margin-right: 8px;
-        }
-
-        @media (max-width: 768px) {
-            .button-container {
-                bottom: 10px;
-                right: 10px;
-            }
-
-            .map-button {
-                padding: 10px 16px;
-                font-size: 12px;
-            }
+        #map {
+            width: 800px;
+            height: 600px;
+            background: #B3C19E;
+            border-radius: 15px;
+            box-shadow: 10px 10px 20px #d1d1d1, -10px -10px 20px #ffffff;
         }
     </style>
-    <script>
-        var map, view, thunderforestLayer, satelliteBasemap, wikimapiaLayer, locationGraphic;
-
-require([
-    "esri/Map",
-    "esri/views/MapView",
-    "esri/layers/WebTileLayer",
-    "esri/Basemap",
-    "esri/Graphic",
-    "esri/geometry/Point"
-], function(Map, MapView, WebTileLayer, Basemap, Graphic, Point) {
-    satelliteBasemap = new Basemap({
-        baseLayers: [
-            new WebTileLayer({
-                urlTemplate: "https://mt1.google.com/vt/lyrs=s&x={col}&y={row}&z={level}",
-                title: "Satellite"
-            })
-        ],
-        title: "Satellite",
-        id: "satellite"
-    });
-
-    thunderforestLayer = new WebTileLayer({
-        urlTemplate: "https://{subDomain}.tile.thunderforest.com/outdoors/{level}/{col}/{row}.png?apikey=397af944364049dab6ed57f9d93a817a",
-        subDomains: ["a", "b", "c"],
-        title: "Thunderforest Outdoors",
-        opacity: 0.5
-    });
-
-    wikimapiaLayer = new WebTileLayer({
-        urlTemplate: "https://i.wikimapia.org/?x={col}&y={row}&zoom={level}&lng=1",
-        title: "Wikimapia",
-        visible: false
-    });
-
-    map = new Map({
-        basemap: satelliteBasemap,
-        layers: [thunderforestLayer, wikimapiaLayer]
-    });
-
-    view = new MapView({
-        container: "map",
-        map: map,
-        center: [30.8118, 50.5051],
-        zoom: 12,
-        navigation: {
-            mouseWheelZoomEnabled: false,
-            browserTouchPanEnabled: false,
-            doubleClickZoomEnabled: false,
-            keyboard: false
-        }
-    });
-
-    view.on("double-click", function(event) {
-        event.stopPropagation();
-    });
-
-    window.requestLocation = function() {
-    if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            var latitude = position.coords.latitude;
-            var longitude = position.coords.longitude;
-
-            var point = new Point({
-                longitude: longitude,
-                latitude: latitude
-            });
-
-            var markerSymbol = {
-                type: "simple-marker",
-                color: [226, 119, 40],
-                outline: {
-                    color: [255, 255, 255],
-                    width: 1
-                }
-            };
-
-            if (locationGraphic) {
-                locationGraphic.geometry = point;
-            } else {
-                locationGraphic = new Graphic({
-                    geometry: point,
-                    symbol: markerSymbol
-                });
-
-                view.graphics.add(locationGraphic);
-            }
-        }, function(error) {
-            console.error("Ошибка при получении местоположения:", error.message);
-        });
-    } else {
-        alert("Геолокация не поддерживается вашим браузером.");
-    }
-}
-});
-
-        function toggleWikimapia() {
-            wikimapiaLayer.visible = !wikimapiaLayer.visible;
-        }
-
-        function toggleThunderforest() {
-            thunderforestLayer.visible = !thunderforestLayer.visible;
-        }
-
-        function disableThunderforest() {
-            thunderforestLayer.visible = false;
-        }
-    </script>
+    <script charset="utf-8" type="text/javascript" src="https://map.meta.ua/js/mapApi.js?lang=ru&key=bc8e1b26a56d5c3d2add10f3544eaf36"></script>
 </head>
 <body>
-    <div id="app">
-        <header class="header">
-            <h1>Google Карта</h1>
-        </header>
-        <div id="map"></div>
-        <div class="button-container">
-            <button class="map-button" onclick="toggleThunderforest()">
-                <i class="fas fa-layer-group"></i> Переключить Thunderforest
-            </button>
-            <button class="map-button" onclick="toggleWikimapia()">
-                <i class="fas fa-globe"></i> Переключить Wikimapia
-            </button>
-            <button class="map-button" onclick="requestLocation()">
-                <i class="fas fa-map-marker-alt"></i> Запросить местоположение
-            </button>
-        </div>
-    </div>
+    <div id="map"></div>
+
+    <script>
+        var map = null;
+        var markers = null;
+
+        function init() {
+            map = new MetaMapsOL.Map('map', {
+                controls: [
+                    new OpenLayers.Control.Permalink(),
+                    new MetaMapsOL.Control.LayerSwitcher(),
+                    new MetaMapsOL.Control.PanZoomBar(),
+                    new OpenLayers.Control.ScaleLine(),
+                    new MetaMapsOL.Control.OverviewMap({
+                        size: {
+                            w: 180,
+                            h: 120
+                        }
+                    })
+                ]
+            });
+
+            markers = new MetaMapsOL.Layer.Markers.Movable("Маркеры", {
+                displayInLayerSwitcher: true
+            });
+            map.addLayer(markers);
+
+            addMarkers();
+        }
+
+        function addMarkers() {
+            var locations = [
+                {lon: 30.5234, lat: 50.4501, name: "Киев"},
+                {lon: 36.2304, lat: 49.9935, name: "Харьков"},
+                {lon: 30.7233, lat: 46.4825, name: "Одесса"}
+            ];
+
+            var extent = new OpenLayers.Bounds();
+            var size = new OpenLayers.Size(32, 32);
+            var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
+
+            locations.forEach(function(loc) {
+                var ll = new OpenLayers.LonLat(loc.lon, loc.lat).transform(map.displayProjection, map.projection);
+                var icon = new OpenLayers.Icon("https://map.meta.ua/i/icons/1_04.png", size, offset);
+                var marker = new MetaMapsOL.Marker(ll, icon.clone());
+                
+                marker.events.register("mouseover", marker, function() {
+                    var popup = new OpenLayers.Popup.FramedCloud(
+                        "popup",
+                        ll,
+                        null,
+                        "<div style='font-size:12px'>" + loc.name + "</div>",
+                        null,
+                        true
+                    );
+                    map.addPopup(popup);
+                });
+
+                marker.events.register("mouseout", marker, function() {
+                    map.popups[0].destroy();
+                });
+
+                markers.addMarker(marker);
+                extent.extend(ll);
+            });
+
+            map.zoomToExtent(extent);
+        }
+
+        window.onload = init;
+    </script>
 </body>
-</html> 
+</html>
